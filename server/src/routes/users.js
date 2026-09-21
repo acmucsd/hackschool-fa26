@@ -1,14 +1,17 @@
 const express = require("express");
-const { connectToDatabase } = require("../db/mongodb");
+const {
+  getUsers,
+  getUserByName,
+  getRecentUsers,
+  createUser
+} = require("../controllers/user.controller");
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  const db = await connectToDatabase();
+router.get("/", getUsers);
+router.get("/recent", getRecentUsers);
+router.get("/:username", getUserByName);
 
-  const users = await db.collection("users").find().toArray();
-
-  res.json(users);
-});
+router.post("/", createUser);
 
 module.exports = router;

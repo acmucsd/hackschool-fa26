@@ -12,7 +12,8 @@ A Wordle clone constructed for ACM Hack School 2026.
 
 Create in project root: `npx create-next-app@latest client`
 
-This auto-installs TypeScript, ESLint, Tailwind CSS, App Router, and Next.js scaffolding.
+Run inside client directory:
+`npm run dev`
 
 Dependencies: `npm install canvas-confetti`
 
@@ -21,6 +22,9 @@ Run inside client directory: `npm run dev`
 The runs the project on localhost:3000.
 
 ## Backend (Server) Setup
+
+Run inside server directory: 
+`npm start`
 
 WIP!
 
