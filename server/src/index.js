@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/users");
 const gameRoutes = require("./routes/games");
+const wordRoutes = require("./routes/words");
 const { connectToDatabase } = require("./db/mongodb");
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/games", gameRoutes); 
+app.use("/api/words", wordRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "API is running" });
