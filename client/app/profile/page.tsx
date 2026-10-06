@@ -29,9 +29,9 @@ export default function ProfilePage() {
 
     (async () => {
       try {
-        const res = await fetch(`${API}/api/users/${encodeURIComponent(username)}`);
+        const res = await fetch(`${API}/api/users/${username}`);
 
-        // The stored username no longer exists (for example the database was reset)
+        // The stored username no longer exists
         if (res.status === 404) {
           clearSession();
           router.replace("/login");
@@ -51,9 +51,13 @@ export default function ProfilePage() {
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto bg-slate-900 text-slate-100 px-6 py-10 flex flex-col">
+      {/* Error Handler */}
       {error && <p className="text-center text-red-400">{error}</p>}
+
+      {/* Checks if user data is being loaded */}
       {!user && !error && <p className="text-center opacity-60">Loading...</p>}
 
+      {/* If the user data is avialable, display it */}
       {user && (
         <div className="mx-auto w-full max-w-6xl flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-1 gap-6">
           <div className="lg:col-span-1 flex flex-col gap-6 min-h-0">
@@ -61,6 +65,8 @@ export default function ProfilePage() {
             <OtherProfiles 
             excludeUsername={user.username} 
             localProfiles={user.username === testUser.username ? testOthers : undefined}
+            // specificUsername={"Ada"}
+            // Add specificUsername={<any username within the database>} when you want to test your getUserByName() function
             />
           </div>
 

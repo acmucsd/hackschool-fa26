@@ -32,6 +32,7 @@ const createGame = async (req, res) => {
         game_metric: gameMetric,
     });
 
+    // Save and return the created game 
     try {
         await game.save();
         res.status(201).json(game);

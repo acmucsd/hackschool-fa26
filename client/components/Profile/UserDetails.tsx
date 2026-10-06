@@ -23,7 +23,7 @@ export default function UserDetails({ user }: { user: UserProfile }) {
       <p className="mt-4 text-sm opacity-80">{user.bio || "No bio yet."}</p>
 
       <div className="mt-4 inline-block rounded bg-emerald-600 px-3 py-1 text-sm font-semibold">
-        🔥 {user.streak} day streak
+        🔥 {user.streak} game streak
       </div>
     </section>
   );

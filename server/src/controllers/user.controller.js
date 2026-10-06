@@ -25,65 +25,77 @@ const getRecentUsers = async (req, res) => {
 const createUser = async (req, res) => {
     const { email, username, password, bio } = req.body;
 
+    // Check if all required fields are provided
     if (!email || !username || !password)
         return res.status(400).json({ error: "Email, username, and password are required." });
 
-    try {
-        if (await User.findOne({ username }))
-            return res.status(409).json({ error: "That username is already taken." });
+    // Check if the username is already taken
+    if (await User.findOne({ username }))
+        return res.status(409).json({ error: "That username is already taken." });
 
-        const user = await User.create({ email, username, password, bio });
-        const { password: _removed, ...safeUser } = user.toObject();
-        res.status(201).json(safeUser);
-    } catch (err) {
-        if (err.code === 11000)
-            return res.status(409).json({ error: "That email is already in use." });
-        res.status(400).json({ error: err.message });
-    }
+    // Check if the email is already in use
+    if (await User.findOne({ email }))
+        return res.status(409).json({ error: "That email is already in use." });
+
+    const user = await User.create({ email, username, password, bio });
+
+    // Remove the password before sending the user back
+    const { password: _removed, ...safeUser } = user.toObject();
+
+    // Return the user 
+    res.json(safeUser);
+
 };
 
 const login = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        if (!username || !password)
-            return res.status(400).json({ error: "Username and password are required." });
+    const { username, password } = req.body;
 
-        const user = await User.findOne({ username });
-        if (!user || user.password !== password)
-            return res.status(401).json({ error: "Invalid username or password." });
+    // Check if the username and password are provided
+    if (!username || !password)
+        return res.status(400).json({ error: "Username and password are required." });
 
-        // Remove the password before sending the user back
-        const { password: _removed, ...safeUser } = user.toObject();
-        res.json(safeUser);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    // Check if the username and password provided are valid 
+    const user = await User.findOne({ username });
+    if (!user || user.password !== password)
+        return res.status(401).json({ error: "Invalid username or password." });
+
+    // Remove the password before sending the user back
+    const { password: _removed, ...safeUser } = user.toObject();
+
+    // Return the user 
+    res.json(safeUser);
+
 };
 
 const addPastGame = async (req, res) => {
-    try {
-        const { word, guessed_words } = req.body;
 
-        if (!word || !Array.isArray(guessed_words) || guessed_words.length === 0)
-            return res.status(400).json({ error: "word and guessed_words are required." });
+    const { word, guessed_words } = req.body;
 
-        const user = await User.findOne({ username: req.params.username });
-        if (!user) return res.status(404).json({ error: "User not found." });
+    // Check if all required fields are provided
+    if (!word || !Array.isArray(guessed_words) || guessed_words.length === 0)
+        return res.status(400).json({ error: "word and guessed_words are required." });
 
-        // A win means the last guess was the word. The server works this out
-        // itself instead of trusting a "won" flag from the browser.
-        const won =
-            guessed_words[guessed_words.length - 1].toUpperCase() === word.toUpperCase();
+    // Check if the user exists
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) return res.status(404).json({ error: "User not found." });
 
-        user.past_games.push({ word, guessed_words, date: new Date() });
-        user.streak = won ? user.streak + 1 : 0;
+    // A win means the last guess was the word. The server works this out
+    // itself instead of trusting a "won" flag from the browser.
+    const won =
+        guessed_words[guessed_words.length - 1].toUpperCase() === word.toUpperCase();
 
-        await user.save();
+    // Push the new game to the top of the user's past games
+    user.past_games.push({ word, guessed_words, date: new Date() });
 
-        res.status(201).json({ game: user.past_games.at(-1), streak: user.streak });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    // Update the user's streak if won 
+    user.streak = won ? user.streak + 1 : 0;
+
+    // Save the updated user 
+    await user.save();
+
+    // Return the result 
+    res.json({ game: user.past_games.at(-1), streak: user.streak });
+
 };
 
 module.exports = {

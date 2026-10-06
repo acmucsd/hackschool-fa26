@@ -9,9 +9,11 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 export default function OtherProfiles({
   excludeUsername,
   localProfiles,
+  specificUsername
 }: {
   excludeUsername?: string;
   localProfiles?: PublicProfile[];
+  specificUsername?: string;
 }) {
   const [profiles, setProfiles] = useState<PublicProfile[]>([]); // every profile we fetched
   const [loading, setLoading] = useState(true);
@@ -33,6 +35,7 @@ export default function OtherProfiles({
       setLoading(true);
       setError(null);
       try {
+
         //start of getUsers fetch
         const res = await fetch(`${API}/api/users`);
 
@@ -50,7 +53,6 @@ export default function OtherProfiles({
         //end of getUsers fetch
 
         // Uncomment this block to test your getRecentUsers() function!
-        // (Comment out the getUsers fetch above first, so only one fetch runs.)
         // const recentRes = await fetch(`${API}/api/users/recent`);
         // if (recentRes.status === 404) {
         //   if (!cancelled) setProfiles([]);
@@ -64,11 +66,29 @@ export default function OtherProfiles({
         //   setProfiles(recentData.filter((u) => u.username !== excludeUsername));
         // }
 
+        // FYI: Make sure to comment out any other fetch blocks that you aren't using!
+
+        // Uncomment this block to test your getUserByName() function!
+        // const usernameRes = await fetch(`${API}/api/users/${specificUsername}`);
+        // if (usernameRes.status === 404) {
+        //   if (!cancelled) setProfiles([]);
+        //   return;
+        // }
+        // if (!usernameRes.ok) throw new Error(`Request failed (${usernameRes.status})`);
+
+        // const usernameData: PublicProfile = await usernameRes.json();
+
+        // if (!cancelled) {
+        //   setProfiles([usernameData]);
+        // }
+
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Something went wrong");
       } finally {
         if (!cancelled) setLoading(false);
       }
+
+
     })();
 
     return () => { cancelled = true; };
@@ -78,6 +98,7 @@ export default function OtherProfiles({
     <section className="flex min-h-0 flex-1 flex-col rounded-lg bg-slate-800 p-6">
       <h2 className="mb-4 shrink-0 text-2xl font-bold">Other Players</h2>
 
+      {/* If the players have not been fetched yet */}
       {loading && <p className="text-sm opacity-60">Loading...</p>}
 
       {/*failed to reload, so gives another chance to retry*/}
@@ -87,12 +108,14 @@ export default function OtherProfiles({
         </button>
       )}
 
+      {/* If there are no players to display */}
       {!loading && !error && profiles.length === 0 && (
         <p className="text-sm opacity-60">No other players yet.</p>
       )}
 
       {profiles.length > 0 && (
         <ul className="scroll-dark flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain pr-2 max-h-80 lg:max-h-none">
+          {/* List of other players based on API endpoint use */}
           {profiles.map((p) => (
             <li key={p._id} className="flex shrink-0 items-center gap-3 rounded bg-slate-700 p-3">
               <img src="/Profile.png" width={36} alt="Profile" className="rounded-full" />

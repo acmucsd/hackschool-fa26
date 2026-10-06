@@ -4,11 +4,12 @@ import confetti from "canvas-confetti";
 import Toast from "./Toast";
 import Board from "./Board/Board";
 import Keyboard from "./Keyboard/Keyboard";
-import type { LetterStatus, RowData } from "@/lib/types";
+import type { LetterStatus, RowData, UserProfile } from "@/lib/types";
 import { getWordOfTheDay } from "@/lib/wordOfTheDay";
 import { getTodayFormatted } from "@/lib/date";
 import { getUsername } from "@/lib/session";
-import { testUser, saveTestGame } from "@/lib/testUser";
+import { SOLUTION_WORDS } from "@/lib/wordList";
+import { testUser, saveTestGame, getTestUser } from "@/lib/testUser";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -23,7 +24,6 @@ export default function Game() {
 
   // State for the solution word of the day
   const [solution, setSolution] = useState<string>("");
-  useEffect(() => { setSolution(getWordOfTheDay()); }, []);
 
   // State for the rows of the game board
   const [rows, setRows] = useState<RowData[]>(
@@ -106,7 +106,7 @@ export default function Game() {
     }
 
     try {
-      const res = await fetch(`${API}/api/users/${encodeURIComponent(username)}/games`, {
+      const res = await fetch(`${API}/api/users/${username}/games`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ word: solution, guessed_words: guessedWords }),
@@ -196,8 +196,6 @@ export default function Game() {
     setLetterStatuses(updatedStatuses);
   };
 
-
-
   // Functions to handle saving, loading, and resetting the game state
 
   const handleSave = (): void => {
@@ -222,6 +220,66 @@ export default function Game() {
     setLetterStatuses({});
   };
 
+  // Words this user has already played (from the database, or the browser for the test account)
+  const getPlayedWords = async (): Promise<string[]> => {
+    const username = getUsername();
+
+    if (username === testUser.username) {
+      return getTestUser().past_games.map((game) => game.word);
+    }
+
+    if (username) {
+      try {
+        const res = await fetch(`${API}/api/users/${username}`);
+        if (res.ok) {
+          const user: UserProfile = await res.json();
+          return user.past_games.map((game) => game.word);
+        }
+        console.error("Could not load past games, status:", res.status);
+      } catch (e) {
+        console.error("Could not load past games:", e);
+      }
+    }
+
+    return []; // no user, or the lookup failed
+  };
+
+  // Chooses a random word the user hasn't solved yet (and isn't the current one)
+  const pickNewWord = (playedWords: string[]): string => {
+    const played = new Set(playedWords.map((w) => w.toUpperCase()));
+
+    const unused = SOLUTION_WORDS.filter((w) => !played.has(w) && w !== solution);
+
+    // If they've played every word, fall back to any word except the current one
+    const pool = unused.length > 0 ? unused : SOLUTION_WORDS.filter((w) => w !== solution);
+
+    return pool[Math.floor(Math.random() * pool.length)];
+  };
+
+  // On the first load: use the word of the day, unless this user has already played it
+  useEffect(() => {
+    const startFirstGame = async () => {
+      const wordOfTheDay = getWordOfTheDay().toUpperCase();
+      const playedWords = (await getPlayedWords()).map((w) => w.toUpperCase());
+
+      if (playedWords.includes(wordOfTheDay)) {
+        setSolution(pickNewWord(playedWords)); // already played, so pick a different word
+      } else {
+        setSolution(wordOfTheDay);
+      }
+    };
+
+    startFirstGame();
+  }, []);
+
+  const handleGameReset = async (): Promise<void> => {
+    handleReset(); // clear the board right away
+    setToast(null);
+
+    const playedWords = await getPlayedWords();
+    setSolution(pickNewWord(playedWords));
+  };
+
 
   /*
     Render the game UI, including the board, keyboard, and toast messages.
@@ -243,9 +301,11 @@ export default function Game() {
 
       {/* Game Controls */}
       <div className="flex gap-4">
-        <button onClick={handleSave} className="px-4 py-2 bg-emerald-600 rounded">Save</button>
-        <button onClick={handleLoad} className="px-4 py-2 bg-amber-500 rounded">Load</button>
-        <button onClick={handleReset} className="px-4 py-2 bg-slate-700 rounded">Reset</button>
+        {/* <button onClick={handleSave} className="px-4 py-2 bg-emerald-600 rounded">Save</button>
+        <button onClick={handleLoad} className="px-4 py-2 bg-amber-500 rounded">Load</button> */}
+        {gameOver && (
+          <button onClick={handleGameReset} className="px-4 py-2 bg-slate-700 rounded">Reset</button>
+        )}
       </div>
 
       {/* Toast Message */}
