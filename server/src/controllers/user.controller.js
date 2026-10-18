@@ -1,26 +1,26 @@
-const User = require("../models/userModel");
+//Require the userModel we made 
 
 const getUsers = async (req, res) => {
-    const users = await User.find();
-    if (users.length === 0)
-        return res.status(404).json({ error: "Users not found." });
-    res.json(users);
+    //use the .find() function, which by default grabs all instances in our users collections
+
+    //Do a 404 check based on whether the users length is === 0
+
+    //res.json your const with the users you are going to return
 };
 
 const getUserByName = async (req, res) => {
-    const user = await User.findOne({ username: req.params.username });
-    if (!user) return res.status(404).json({ error: "User not found." });
-    res.json(user)
+
+    //use the .findOne({...}) function with username: req.params.username as your parameter
+
+    //404 check to see if there is a single user returned
+
+    //res.json your user
 };
 
-const getRecentUsers = async (req, res) => {
-    const users = await User.find().
-        sort({ created_at: -1 }).
-        limit(10);
-    if (users.length === 0)
-        return res.status(404).json({ error: "Users not found." });
-    res.json(users);
-};
+//make the getRecentUsers function with async (req, res)
+
+//use the find() function with the .sort in descending order, and then limit your amount to 10
+//Hint: .limit(10)
 
 const createUser = async (req, res) => {
     const { email, username, password, bio } = req.body;
@@ -98,11 +98,9 @@ const addPastGame = async (req, res) => {
 
 };
 
+//Add your functions into the list below as exports!
 module.exports = {
     login,
-    getUsers,
-    getUserByName,
-    getRecentUsers,
     createUser,
-    addPastGame
+    addPastGame,
 }; 

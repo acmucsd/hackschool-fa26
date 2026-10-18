@@ -36,7 +36,7 @@ export default function OtherProfiles({
       setError(null);
       try {
 
-        //start of getUsers fetch
+        //start of getUsers fetch - used to test your getUsers() function!
         const res = await fetch(`${API}/api/users`);
 
         if (res.status === 404) {
@@ -52,6 +52,8 @@ export default function OtherProfiles({
         }
         //end of getUsers fetch
 
+        
+
         // Uncomment this block to test your getRecentUsers() function!
         // const recentRes = await fetch(`${API}/api/users/recent`);
         // if (recentRes.status === 404) {
@@ -66,7 +68,11 @@ export default function OtherProfiles({
         //   setProfiles(recentData.filter((u) => u.username !== excludeUsername));
         // }
 
+
+
         // FYI: Make sure to comment out any other fetch blocks that you aren't using!
+
+
 
         // Uncomment this block to test your getUserByName() function!
         // const usernameRes = await fetch(`${API}/api/users/${specificUsername}`);
@@ -81,6 +87,13 @@ export default function OtherProfiles({
         // if (!cancelled) {
         //   setProfiles([usernameData]);
         // }
+
+        //For the specificUsername parameter, feel free to change that to any of the names that you see 
+        //In your database on MongoDB Atlas. The default is going to display as "Ada" but replace 
+        //specificUsername with a double-quoted name of your choice thats in the users collection, like "Niklaus"
+
+
+
 
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Something went wrong");

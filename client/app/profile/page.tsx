@@ -65,7 +65,7 @@ export default function ProfilePage() {
             <OtherProfiles 
             excludeUsername={user.username} 
             localProfiles={user.username === testUser.username ? testOthers : undefined}
-            // specificUsername={"Ada"}
+            specificUsername={"Ada"}
             // Add specificUsername={<any username within the database>} when you want to test your getUserByName() function
             />
           </div>
